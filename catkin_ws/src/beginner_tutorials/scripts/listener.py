@@ -46,13 +46,12 @@ class Forwarder:
         self.pub = rospy.Publisher('color', String, queue_size=10)
         self.subscriber = rospy.Subscriber('randomNumberGenerator', Num, self.callback)
 
-    def talk(self):
-        
+    def talk(self, to_publish):
+        rospy.loginfo('I send %s',to_publish)
+        self.pub.publish(to_publish)
 
 
-
-    def callback(self, data):
-        msg_data = data
+    def callback(self, msg_data):
         average = self.calc_avg(msg_data.R, msg_data.G, msg_data.B)
         if average >= 180:
             category = "HIGH"
@@ -60,7 +59,7 @@ class Forwarder:
             category = "LOW"
         else: category = "MEDIUM"
         
-        self.pub.publish(category)
+        self.talk(to_publish=category)
 
         rospy.loginfo(rospy.get_caller_id() + ' %s %i', category, average)
 
