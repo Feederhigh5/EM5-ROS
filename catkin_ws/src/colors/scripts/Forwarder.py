@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
@@ -33,42 +33,51 @@
 #
 # Revision $Id$
 
-## Simple talker demo that published std_msgs/Strings messages
+## Simple talker demo that listens to std_msgs/Strings published 
 ## to the 'chatter' topic
 
-import random
 import rospy
-from std_msgs.msg import Int32
-from beginner_tutorials.msg import Num
-import .Forwarder
+from std_msgs.msg import String
+from colors.msg import Num
 
-class Publisher(Forwarder):
+class Forwarder:
 
-    def __init__(self, from_topic):
-        rate = rospy.Rate(1) # 10hz
-        self.pub = rosby.Publisher(from_topic, Num, queue_size=10)
-        self.create_message()
+    def __init__(self, from_topic, to_topic):
+        self.pub = rospy.Publisher(from_topic, String, queue_size=10)
+        self.subscriber = rospy.Subscriber(to_topic, Num, self.callback)
 
-    def create_message():
-        while not rospy.is_shutdown():
-            message = Num()
-            message.R = self.rand_colorcode()
-            message.G = self.rand_colorcode()
-            message.B = self.rand_colorcode()
-            self.talk(message)
-            rate.sleep()
-            return
+    def talk(self, to_publish):
+        rospy.loginfo('I send %s',to_publish)
+        self.pub.publish(to_publish)
+
+
+    def callback(self, msg_data):
+        average = self.calc_avg(msg_data.R, msg_data.G, msg_data.B)
+        if average >= 180:
+            category = "HIGH"
+        elif average< 100:
+            category = "LOW"
+        else: category = "MEDIUM"
+        
+        self.talk(to_publish=category)
+
+        rospy.loginfo(rospy.get_caller_id() + ' %s %i', category, average)
+
 
     @staticmethod
-    def rand_colorcode():
-        return random.randrange(0,255)
+    def calc_avg(a,b,c):
+        list = [a,b,c]
+        return sum(list)/len(list)
+        
 
 
 if __name__ == '__main__':
-    rospy.init_node('talker', anonymous=True)
+    rospy.init_node('listener', anonymous=True)
     try:
-        Publisher("randomNumberGenerator")
+        Forwarder("randomNumberGenerator", "color")
         rospy.spin()
     except rospy.ROSInterruptException:
-        pass
-    
+        rospy.logerr("error")
+    # spin() simply keeps python from exiting until this node is stopped
+
+        
