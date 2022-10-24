@@ -33,46 +33,42 @@
 #
 # Revision $Id$
 
-## Simple talker demo that listens to std_msgs/Strings published 
+## Simple talker demo that published std_msgs/Strings messages
 ## to the 'chatter' topic
 
+import random
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import Int32
 from beginner_tutorials.msg import Num
+import .Forwarder
 
-class Forwarder:
+class Publisher(Forwarder):
 
-    def __init__(self):
-        self.pub = rospy.Publisher('color', String, queue_size=10)
-        self.subscriber = rospy.Subscriber('randomNumberGenerator', Num, self.callback)
+    def __init__(self, from_topic):
+        rate = rospy.Rate(1) # 10hz
+        self.pub = rosby.Publisher(from_topic, Num, queue_size=10)
+        self.create_message()
 
-    def talk(self, to_publish):
-        rospy.loginfo('I send %s',to_publish)
-        self.pub.publish(to_publish)
-
-
-    def callback(self, msg_data):
-        average = self.calc_avg(msg_data.R, msg_data.G, msg_data.B)
-        if average >= 180:
-            category = "HIGH"
-        elif average< 100:
-            category = "LOW"
-        else: category = "MEDIUM"
-        
-        self.talk(to_publish=category)
-
-        rospy.loginfo(rospy.get_caller_id() + ' %s %i', category, average)
-
+    def create_message():
+        while not rospy.is_shutdown():
+            message = Num()
+            message.R = self.rand_colorcode()
+            message.G = self.rand_colorcode()
+            message.B = self.rand_colorcode()
+            self.talk(message)
+            rate.sleep()
+            return
 
     @staticmethod
-    def calc_avg(a,b,c):
-        list = [a,b,c]
-        return sum(list)/len(list)
-        
+    def rand_colorcode():
+        return random.randrange(0,255)
 
 
 if __name__ == '__main__':
-    rospy.init_node('listener', anonymous=True)
-    Forwarder()
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+    rospy.init_node('talker', anonymous=True)
+    try:
+        Publisher("randomNumberGenerator")
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
+    

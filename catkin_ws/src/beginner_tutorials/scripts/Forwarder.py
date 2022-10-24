@@ -33,36 +33,50 @@
 #
 # Revision $Id$
 
-## Simple talker demo that published std_msgs/Strings messages
+## Simple talker demo that listens to std_msgs/Strings published 
 ## to the 'chatter' topic
 
-import random
 import rospy
-from std_msgs.msg import Int32
+from std_msgs.msg import String
 from beginner_tutorials.msg import Num
 
+class Forwarder:
 
-def talker():
-    pub = rospy.Publisher('randomNumberGenerator', Num, queue_size=10)
-    rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(1) # 10hz
-    while not rospy.is_shutdown():
-        message = Num()
-        message.R = rand_colorcode()
-        message.G = rand_colorcode()
-        message.B = rand_colorcode()
-        rospy.loginfo(message)
-        pub.publish(message)
-        rate.sleep()
+    def __init__(self, from_topic, to_topic):
+        self.pub = rospy.Publisher(from_topic, String, queue_size=10)
+        self.subscriber = rospy.Subscriber(to_topic, Num, self.callback)
+
+    def talk(self, to_publish):
+        rospy.loginfo('I send %s',to_publish)
+        self.pub.publish(to_publish)
 
 
-def rand_colorcode():
-    return random.randrange(0,255)
+    def callback(self, msg_data):
+        average = self.calc_avg(msg_data.R, msg_data.G, msg_data.B)
+        if average >= 180:
+            category = "HIGH"
+        elif average< 100:
+            category = "LOW"
+        else: category = "MEDIUM"
+        
+        self.talk(to_publish=category)
+
+        rospy.loginfo(rospy.get_caller_id() + ' %s %i', category, average)
+
+
+    @staticmethod
+    def calc_avg(a,b,c):
+        list = [a,b,c]
+        return sum(list)/len(list)
+        
 
 
 if __name__ == '__main__':
+    rospy.init_node('listener', anonymous=True)
     try:
-        talker()
-    except rospy.ROSInterruptException:
-        pass
-    
+        Forwarder("randomNumberGenerator", "color")
+        rospy.spin()
+    except rospy.ROSInterruptException
+    # spin() simply keeps python from exiting until this node is stopped
+
+        
