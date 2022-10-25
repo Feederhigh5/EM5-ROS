@@ -2,4 +2,4 @@ catkin_ws/.catkin_workspace
 catkin_ws/build/*
 catkin_ws/devel/*
 catkin_ws/install/*
-catkin_ws/src/colors/scripts/__pycache__/Forwarder.cpython-38.pyc
+catkin_ws/src/colors/scripts/__pycache__/*
