@@ -4,14 +4,18 @@ import random
 import rospy
 from std_msgs.msg import Int32
 from colors.msg import Num
-from Forwarder import Forwarder
 
-class Publisher(Forwarder):
+
+class Publisher:
 
     def __init__(self, from_topic):
         self.rate = rospy.Rate(1) # 10hz
         self.pub = rospy.Publisher(from_topic, Num, queue_size=10)
         self.create_message()
+
+    def talk(self, to_publish):
+        rospy.loginfo('I send %s',to_publish)
+        self.pub.publish(to_publish)
 
     def create_message(self):
         while not rospy.is_shutdown():
