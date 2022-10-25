@@ -56,7 +56,7 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  AddTwoInts.srv
+  GetPosition.srv
 #   Service1.srv
 #   Service2.srv
 )
@@ -206,6 +206,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-catkin_install_python(PROGRAMS scripts/forwarder.py scripts/publisher.py
+catkin_install_python(PROGRAMS scripts/forwarder.py scripts/publisher.py scripts/service.py scripts/client.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
